@@ -23,7 +23,10 @@ def components_of_connectivity(graph: dict) -> list:
     '''
     Finds the connectivity components of an unoriented graph and returns a list of them.
     >>> components_of_connectivity({0: [1, 2], 1: [0, 2], 2: [0, 1], 3: [4], 4: [3]})
-    [[0, 1, 2], [3, 4]]
+    Graph contains 2 connectivity components: [{0: [1, 2], 1: [0, 2], 2: [0, 1]}, {3: [4], 4: [3]}]
+    >>> components_of_connectivity({0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]})
+    Graph contains 1 connectivity component:
+    [{0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]}]
     '''
     pass
 
@@ -32,7 +35,10 @@ def strong_connectivity(graph: dict) -> list:
     Finds the components of the strong connectivity
     of an oriented graph and returns a list of them.
     >>> strong_connectivity({0: [1, 2], 1: [2], 2: [0, 1], 3: [4], 4: [3, 5], 6: [7], 7: [6]})
-    [[0, 1, 2], [6, 7]]
+    Graph contains 3 strong connectivity components:
+    [{0: [1, 2], 1: [2], 2: [0, 1]}, {6: [7], 7: [6]}]
+    >>> strong_connectivity({0: [1, 2], 1: [2], 2: [3], 3: [], 4: [3], 5: [4]})
+    Graph doesn`t contain any strong connectivity components.
     '''
 
 def connection_points(graph: dict) -> list:
@@ -40,7 +46,7 @@ def connection_points(graph: dict) -> list:
     Finds the connection points of an unoriented graph and returns a list of them.
     >>> connection_points({0: [1], 1: [0, 2], 2: [1, 3, 4], 3: [2], \
 4: [2, 5, 6, 7], 5: [4, 6], 6: [4, 5], 7: [4, 8], 8: [7]})
-    [1, 2, 4, 7]
+    There is a list of connection points of the graph: [1, 2, 4, 7]
     '''
     pass
 
@@ -49,7 +55,8 @@ def bridges(graph: dict) -> list:
     Finds the bridges of an unoriented graph and returns a list of them.
     >>> bridges({0: [1], 1: [0, 2], 2: [1, 3, 4], 3: [2], \
 4: [2, 5, 6, 7], 5: [4, 6], 6: [4, 5], 7: [4, 8], 8: [7]})
-    [[0, 1], [1, 2], [2, 3], [2, 4], [4, 7], [7, 8]]
+    There is a list of bridges of the graph:
+    [[0, 1], [2, 3], [2, 4], [4, 5], [4, 6], [4, 7], [7, 8]]
     '''
     pass
 
