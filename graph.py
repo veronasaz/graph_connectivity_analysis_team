@@ -1,5 +1,7 @@
 '''Graph'''
 
+import copy
+
 def read_csv(file_name: str):
     '''
     Reads graph from csv file returns a dictionary.
@@ -50,17 +52,13 @@ def connection_points(graph: dict) -> list:
     '''
     pass
 
-import copy
-
 def bridges(graph: dict) -> list:
     '''
     Finds the bridges of an unoriented graph and returns a list of them.
-
     >>> bridges({0: [1], 1: [0, 2], 2: [1, 3, 4], 3: [2], \
 4: [2, 5, 6, 7], 5: [4, 6], 6: [4, 5], 7: [4, 8], 8: [7]})
     There is a list of bridges of the graph:
     [(0, 1), (1, 2), (2, 3), (2, 4), (4, 7), (7, 8)]
-
     >>> bridges({1: [5, 2], 2: [1, 4, 5], 4: [2, 6, 7], 5: [1, 2], 6: [4, 7], 7: [3, 4, 6], 3: [7]})
     There is a list of bridges of the graph:
     [(2, 4), (3, 7)]
