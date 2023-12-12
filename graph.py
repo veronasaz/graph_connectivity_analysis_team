@@ -25,12 +25,31 @@ def components_of_connectivity(graph: dict) -> list:
     '''
     Finds the connectivity components of an unoriented graph and returns a list of them.
     >>> components_of_connectivity({0: [1, 2], 1: [0, 2], 2: [0, 1], 3: [4], 4: [3]})
-    Graph contains 2 connectivity components: [{0: [1, 2], 1: [0, 2], 2: [0, 1]}, {3: [4], 4: [3]}]
+    'Graph contains 2 connectivity components: [{0: [1, 2], 1: [0, 2], 2: [0, 1]}, {3: [4], 4: [3]}]'
     >>> components_of_connectivity({0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]})
-    Graph contains 1 connectivity component:
-    [{0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]}]
+    'Graph contains 1 connectivity component: \
+[{0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]}]'
     '''
-    pass
+    def dfs(node, visited, component):
+        visited[node] = True
+        component[node] = graph[node]
+
+        for neighbor in graph[node]:
+            if not visited[neighbor]:
+                dfs(neighbor, visited, component)
+
+    visited = {node: False for node in graph}
+    connectivity_components = []
+
+    for node in graph:
+        if not visited[node]:
+            component = {}
+            dfs(node, visited, component)
+            connectivity_components.append(component)
+    num = len(connectivity_components)
+    if num >=2:
+        return f'Graph contains {num} connectivity components: {connectivity_components}'
+    return f'Graph contains {num} connectivity component: {connectivity_components}'
 
 def strong_connectivity(graph: dict) -> list:
     '''
@@ -75,40 +94,28 @@ def bridges(graph: dict) -> list:
             edges.add(edge)
     edges = list(edges)
     bridges_result=[]
+    def is_connected(graph: dict) -> bool:
+        '''
+        Checks if a graph is connected.
+        '''
+        def dfs(node, visited):
+            visited[node] = True
 
-    def dfs(graph):
-        """
-        dfs to look if graph is connected 
-        """
-        step=[]
-        dfs_result=[]
-        vertex=min(graph)
+            for neighbor in graph[node]:
+                if not visited[neighbor]:
+                    dfs(neighbor, visited)
 
-        while len(dfs_result)<len(graph):
-            if vertex not in dfs_result:
-                dfs_result.append(vertex)
-                step.append(vertex)
+        visited = {node: False for node in graph}
+        start_node = next(iter(graph))
 
-            count=0
-            for ver in sorted(graph[vertex]):
-                if ver not in dfs_result:
-                    vertex=ver
-                    count+=1
-                    break
+        dfs(start_node, visited)
 
-            if count==0:
-                if len(step)>1:
-                    step.remove(step[-1])
-                    vertex=step[-1]
-                elif len(step)==1 and len(dfs_result)<len(graph):
-                    return False
-
-        return True
+        return all(visited.values())
 
     for edge in edges:
         graph[edge[0]].remove(edge[1])
         graph[edge[1]].remove(edge[0])
-        if dfs(graph) is False:
+        if not is_connected(graph):
             bridges_result.append(edge)
         graph=copy.deepcopy(graph_origin)
     
