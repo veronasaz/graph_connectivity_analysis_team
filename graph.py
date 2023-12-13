@@ -67,10 +67,38 @@ def connection_points(graph: dict) -> list:
     Finds the connection points of an unoriented graph and returns a list of them.
     >>> connection_points({0: [1], 1: [0, 2], 2: [1, 3, 4], 3: [2], \
 4: [2, 5, 6, 7], 5: [4, 6], 6: [4, 5], 7: [4, 8], 8: [7]})
-    There is a list of connection points of the graph: [1, 2, 4, 7]
+    'There is a list of connection points of the graph: [1, 2, 4, 7]'
     '''
-    pass
+    def dfs(vertex, parent, visited, disc, low, time, ap):
+        children = 0
+        visited[vertex] = True
+        disc[vertex] = low[vertex] = time[0]
+        time[0] += 1
 
+        for adj_vertex in graph[vertex]:
+            if not visited[adj_vertex]:
+                children += 1
+                dfs(adj_vertex, vertex, visited, disc, low, time, ap)
+                low[vertex] = min(low[vertex], low[adj_vertex])
+
+                if parent is None and children > 1:
+                    ap.add(vertex)
+                elif parent is not None and low[adj_vertex] >= disc[vertex]:
+                    ap.add(vertex)
+            elif adj_vertex != parent:
+                low[vertex] = min(low[vertex], disc[adj_vertex])
+
+    visited = {v: False for v in graph} #відстежує, чи була кожна вершина відвідана. 
+    disc = {v: float('inf') for v in graph} #містить час відкриття (або відвідування) кожної вершини. 
+    low = {v: float('inf') for v in graph} #зберігає найнижчий індекс вершини, який можна досягти з даної вершини.
+    ap = set() #зберігає всі точки сполучення графу.
+    time = [0] #Список з одного елемента, що використовується для збереження поточного часу під час DFS.
+    #Цей час збільшується під час відвідування кожної нової вершини.
+
+    for vertex in graph:
+        if not visited[vertex]:
+            dfs(vertex, None, visited, disc, low, time, ap)
+    return (f'There is a list of connection points of the graph: {sorted(list(ap))}')
 def bridges(graph: dict) -> list:
     '''
     Finds the bridges of an unoriented graph and returns a list of them.
@@ -128,4 +156,4 @@ def bridges(graph: dict) -> list:
 
 if __name__ == '__main__':
     import doctest
-    print(doctest.testmod())
+    print(doctest.testmod(verbose=True))
