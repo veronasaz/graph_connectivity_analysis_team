@@ -2,7 +2,7 @@
 
 import copy
 
-def read_csv(file_name: str):
+def read_csv(file_name: str) -> dict:
     '''
     Reads graph from csv file returns a dictionary.
     >>> import tempfile
@@ -56,11 +56,75 @@ def strong_connectivity(graph: dict) -> list:
     Finds the components of the strong connectivity
     of an oriented graph and returns a list of them.
     >>> strong_connectivity({0: [1, 2], 1: [2], 2: [0, 1], 3: [4], 4: [3, 5], 6: [7], 7: [6]})
-    Graph contains 3 strong connectivity components:
-    [{0: [1, 2], 1: [2], 2: [0, 1]}, {6: [7], 7: [6]}]
+    'Graph contains 3 strong connectivity components: \
+[{0: [1, 2], 1: [2], 2: [0, 1]}, {6: [7], 7: [6]}]'
     >>> strong_connectivity({0: [1, 2], 1: [2], 2: [3], 3: [], 4: [3], 5: [4]})
-    Graph doesn`t contain any strong connectivity components.
+    'Graph doesn`t contain any strong connectivity components.'
     '''
+    def dfs_pass_one(vertex, stack, visited):
+        '''
+        First pass of dfs to fill the stack with vertices
+        in the order of their finishing times.
+        '''
+        visited.add(vertex)
+        for neighbor in graph.get(vertex, []):
+            if neighbor not in visited:
+                dfs_pass_one(neighbor, stack, visited)
+        stack.append(vertex)
+
+    def dfs_pass_two(vertex, visited, scc):
+        '''
+        Second pass of dfs to find strongly connected components.
+        '''
+        visited.add(vertex)
+        scc.append(vertex)
+        for neighbor in reverse_g.get(vertex, []):
+            if neighbor not in visited:
+                dfs_pass_two(neighbor, visited, scc)
+
+    def reverse_graph(graph):
+        '''
+        Function to reverse the direction of all edges in the graph.
+        '''
+        reversed_g = {}
+        for vertex in graph:
+            for neighbor in graph[vertex]:
+                reversed_g.setdefault(neighbor, []).append(vertex)
+        return reversed_g
+
+    stack = []
+    visited = set()
+
+    for vertex in graph:
+        if vertex not in visited:
+            dfs_pass_one(vertex, stack, visited)
+
+    reverse_g = reverse_graph(graph)
+
+    visited.clear()
+    connected_components = []
+    while stack:
+        vertex = stack.pop()
+        if vertex not in visited:
+            scc = []
+            dfs_pass_two(vertex, visited, scc)
+            connected_components.append(scc)
+
+    strongly_connected_components = [component for component in connected_components if len(component) > 1]
+    filtered_components = []
+
+    for components in strongly_connected_components:
+        filtered_dict = {}
+        for component in components:
+            if component in graph:
+                filtered_dict[component] = graph[component]
+        filtered_components.append(filtered_dict)
+    
+    result = sorted(filtered_components, key=lambda component: list(component.keys())[0])
+
+    if strongly_connected_components:
+        return f'Graph contains {len(strongly_connected_components)} strong connectivity components: {result}'
+    return "Graph doesn`t contain any strong connectivity components."
 
 def connection_points(graph: dict) -> list:
     '''
@@ -88,12 +152,11 @@ def connection_points(graph: dict) -> list:
             elif adj_vertex != parent:
                 low[vertex] = min(low[vertex], disc[adj_vertex])
 
-    visited = {v: False for v in graph} #відстежує, чи була кожна вершина відвідана. 
-    disc = {v: float('inf') for v in graph} #містить час відкриття (або відвідування) кожної вершини. 
-    low = {v: float('inf') for v in graph} #зберігає найнижчий індекс вершини, який можна досягти з даної вершини.
-    ap = set() #зберігає всі точки сполучення графу.
-    time = [0] #Список з одного елемента, що використовується для збереження поточного часу під час DFS.
-    #Цей час збільшується під час відвідування кожної нової вершини.
+    visited = {v: False for v in graph}
+    disc = {v: float('inf') for v in graph}
+    low = {v: float('inf') for v in graph}
+    ap = set()
+    time = [0]
 
     for vertex in graph:
         if not visited[vertex]:
@@ -155,51 +218,51 @@ def bridges(graph: dict) -> list:
         return bridges_sorted
     return 'There are no bridges in the graph.'
 
-# def main():
-#     '''
-#     Main function.
-#     '''
-#     file = input('Enter the file name: ')
-#     graph = read_csv(file)
-#     def is_oriented(graph: dict) -> bool:
-#         '''
-#         Checks if a graph is oriented.
-#         '''
-#         for vertex in graph:
-#             for neighbor in graph[vertex]:
-#                 if neighbor not in graph or vertex not in graph[neighbor]:
-#                     return True
-#         return False
+def main():
+    '''
+    Main function.
+    '''
+    file = input('Enter the file name: ')
+    graph = read_csv(file)
+    def is_oriented(graph: dict) -> bool:
+        '''
+        Checks if a graph is oriented.
+        '''
+        for vertex in graph:
+            for neighbor in graph[vertex]:
+                if neighbor not in graph or vertex not in graph[neighbor]:
+                    return True
+        return False
     
-#     if is_oriented(graph):
-#         choice = input('Enter the number of the task you want to solve:\n\
-#         1. Components of the strong connectivity of an oriented graph.\n\
-#         2. Connection points of an oriented graph.\n\
-#         3. Bridges of an oriented graph.\n')
-#         if '1' in choice:
-#             print(strong_connectivity(graph))
-#         if '2' in choice:
-#             print(connection_points(graph))
-#         if '3' in choice:
-#             print(bridges(graph))
-#     else:
-#         choice = input('Enter the number of the task you want to solve:\n\
-#         1. Components of the connectivity of an unoriented graph.\n\
-#         2. Components of the strong connectivity of an oriented graph.\n\
-#         3. Connection points of an unoriented graph.\n\
-#         4. Bridges of an unoriented graph.\n')
-#         if '1' in choice:
-#             print(components_of_connectivity(graph))
-#         if '2' in choice:
-#             print(strong_connectivity(graph))
-#         if '3' in choice:
-#             print(connection_points(graph))
-#         if '4' in choice:
-#             print(bridges(graph))
-
-# if __name__ == '__main__':
-#     main()
+    if is_oriented(graph):
+        choice = input('Enter the number of the task you want to solve:\n\
+        1. Components of the strong connectivity of an oriented graph.\n\
+        2. Connection points of an oriented graph.\n\
+        3. Bridges of an oriented graph.\n')
+        if '1' in choice:
+            print(strong_connectivity(graph))
+        if '2' in choice:
+            print(connection_points(graph))
+        if '3' in choice:
+            print(bridges(graph))
+    else:
+        choice = input('Enter the number of the task you want to solve:\n\
+        1. Components of the connectivity of an unoriented graph.\n\
+        2. Components of the strong connectivity of an oriented graph.\n\
+        3. Connection points of an unoriented graph.\n\
+        4. Bridges of an unoriented graph.\n')
+        if '1' in choice:
+            print(components_of_connectivity(graph))
+        if '2' in choice:
+            print(strong_connectivity(graph))
+        if '3' in choice:
+            print(connection_points(graph))
+        if '4' in choice:
+            print(bridges(graph))
 
 if __name__ == '__main__':
-    import doctest
-    print(doctest.testmod(verbose=True))
+    main()
+
+# if __name__ == '__main__':
+#     import doctest
+#     print(doctest.testmod(verbose=False))
