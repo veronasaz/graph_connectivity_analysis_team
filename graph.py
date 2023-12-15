@@ -64,7 +64,6 @@ def components_of_connectivity(graph: dict) -> list:
     num = len(connectivity_components)
     if num > 0:
         return f'Graph contains {num} connectivity component(s): {connectivity_components}'
-    return 'Graph doesn`t contains any connectivity component.'
 
 def strong_connectivity(graph: dict) -> list:
     '''
@@ -95,7 +94,7 @@ def strong_connectivity(graph: dict) -> list:
 
     stack = []
     visited = {}
-    
+
     for node in graph:
         visited[node] = False
 
@@ -181,31 +180,42 @@ def bridges(graph: dict) -> list:
             edges.add(edge)
     edges = list(edges)
     bridges_result=[]
-    def is_connected(graph: dict) -> bool:
+
+    def dfs(graph):
         '''
-        Checks if a graph is connected.
+        DFS to look if graph is connected.
         '''
-        def dfs(node, visited):
-            visited[node] = True
+        step=[]
+        dfs_result=[]
+        vertex=min(graph)
 
-            for neighbor in graph[node]:
-                if not visited[neighbor]:
-                    dfs(neighbor, visited)
+        while len(dfs_result)<len(graph):
+            if vertex not in dfs_result:
+                dfs_result.append(vertex)
+                step.append(vertex)
 
-        visited = {node: False for node in graph}
-        start_node = next(iter(graph))
+            count=0
+            for ver in sorted(graph[vertex]):
+                if ver not in dfs_result:
+                    vertex=ver
+                    count+=1
+                    break
 
-        dfs(start_node, visited)
-
-        return all(visited.values())
+            if count==0:
+                if len(step)>1:
+                    step.remove(step[-1])
+                    vertex=step[-1]
+                elif len(step)==1 and len(dfs_result)<len(graph):
+                    return False
+        return True
 
     for edge in edges:
         graph[edge[0]].remove(edge[1])
         graph[edge[1]].remove(edge[0])
-        if not is_connected(graph):
+        if not dfs(graph):
             bridges_result.append(edge)
         graph = copy.deepcopy(graph_origin)
-    
+
     if bridges_result:
         bridges_sorted = sorted(bridges_result, key=lambda bridge: bridge[0])
         bridges_sorted = sorted(bridges_result, key=lambda bridge: bridge[1])
@@ -213,45 +223,45 @@ def bridges(graph: dict) -> list:
         return bridges_sorted
     return 'There are no bridges in the graph.'
 
-# def main():
-#     '''
-#     Main function to interact with program.
-#     '''
-#     file = input('Enter the file name: ')
-#     graph = read_csv(file)
-#     def is_oriented(graph: dict) -> bool:
-#         '''
-#         Checks if a graph is oriented.
-#         '''
-#         for vertex in graph:
-#             for neighbor in graph[vertex]:
-#                 if neighbor not in graph or vertex not in graph[neighbor]:
-#                     return True
-#         return False
-    
-#     if is_oriented(graph):
-#         choice = input('Enter the number of the task you want to solve:\n\
-#         1. Components of the strong connectivity of an oriented graph.\n')
-#         if '1' in choice:
-#             print(strong_connectivity(graph))
-#     else:
-#         choice = input('Enter the number of the task you want to solve:\n\
-#         1. Components of the connectivity of an unoriented graph.\n\
-#         2. Components of the strong connectivity of an oriented graph.\n\
-#         3. Connection points of an unoriented graph.\n\
-#         4. Bridges of an unoriented graph.\n')
-#         if '1' in choice:
-#             print(components_of_connectivity(graph))
-#         if '2' in choice:
-#             print(strong_connectivity(graph))
-#         if '3' in choice:
-#             print(connection_points(graph))
-#         if '4' in choice:
-#             print(bridges(graph))
+def main():
+    '''
+    Main function to interact with program.
+    '''
+    file = input('Enter the file name: ')
+    graph = read_csv(file)
+    def is_oriented(graph: dict) -> bool:
+        '''
+        Checks if a graph is oriented.
+        '''
+        for vertex in graph:
+            for neighbor in graph[vertex]:
+                if neighbor not in graph or vertex not in graph[neighbor]:
+                    return True
+        return False
 
-# if __name__ == '__main__':
-#     main()
+    if is_oriented(graph):
+        choice = input('Enter the number of the task you want to solve:\n\
+        1. Components of the strong connectivity of an oriented graph.\n')
+        if '1' in choice:
+            print(strong_connectivity(graph))
+    else:
+        choice = input('Enter the number of the task you want to solve:\n\
+        1. Components of the connectivity of an unoriented graph.\n\
+        2. Components of the strong connectivity of an oriented graph.\n\
+        3. Connection points of an unoriented graph.\n\
+        4. Bridges of an unoriented graph.\n')
+        if '1' in choice:
+            print(components_of_connectivity(graph))
+        if '2' in choice:
+            print(strong_connectivity(graph))
+        if '3' in choice:
+            print(connection_points(graph))
+        if '4' in choice:
+            print(bridges(graph))
 
 if __name__ == '__main__':
-    import doctest
-    print(doctest.testmod(verbose=False))
+    main()
+
+# if __name__ == '__main__':
+#     import doctest
+#     print(doctest.testmod(verbose=False))
