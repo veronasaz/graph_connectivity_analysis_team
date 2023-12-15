@@ -69,76 +69,45 @@ def strong_connectivity(graph: dict) -> list:
     '''
     Finds the components of the strong connectivity
     of an oriented graph and returns a list of them.
-    >>> strong_connectivity({0: [1, 2], 1: [2], 2: [0, 1], 3: [4], 4: [3, 5], 6: [7], 7: [6]})
-    'Graph contains 3 strong connectivity components: \
-[{0: [1, 2], 1: [2], 2: [0, 1]}, {6: [7], 7: [6]}]'
-    >>> strong_connectivity({0: [1, 2], 1: [2], 2: [3], 3: [], 4: [3], 5: [4]})
-    'Graph doesn`t contain any strong connectivity components.'
+    >>> strong_connectivity({0: [1], 1: [2], 2: [0]})
+    'Graph contains 1 strong connectivity component: [{0: [1], 1: [2], 2: [0]}]'
+    >>> strong_connectivity({0: [1], 1: [2], 2: [0, 3], 3: [4], 4: [5], 5: [3]})
+    'Graph contains 2 strong connectivity components: [{0: [1], 1: [2], 2: [0, 3], 3: [4], 4: [5], 5: [3]}, {6: [7], 7: [6]}]'
     '''
-    def dfs_pass_one(vertex, stack, visited):
-        '''
-        First pass of dfs to fill the stack with vertices
-        in the order of their finishing times.
-        '''
-        visited.add(vertex)
-        for neighbor in graph.get(vertex, []):
-            if neighbor not in visited:
-                dfs_pass_one(neighbor, stack, visited)
+    def dfs(vertex, visited, stack):
+        visited[vertex] = True
+        for adj_vertex in graph[vertex]:
+            if not visited[adj_vertex]:
+                dfs(adj_vertex, visited, stack)
         stack.append(vertex)
 
-    def dfs_pass_two(vertex, visited, scc):
-        '''
-        Second pass of dfs to find strongly connected components.
-        '''
-        visited.add(vertex)
-        scc.append(vertex)
-        for neighbor in reverse_g.get(vertex, []):
-            if neighbor not in visited:
-                dfs_pass_two(neighbor, visited, scc)
-
-    def reverse_graph(graph):
-        '''
-        Function to reverse the direction of all edges in the graph.
-        '''
-        reversed_g = {}
+    def transpose(graph):
+        transposed_graph = {v: [] for v in graph}
         for vertex in graph:
-            for neighbor in graph[vertex]:
-                reversed_g.setdefault(neighbor, []).append(vertex)
-        return reversed_g
+            for adj_vertex in graph[vertex]:
+                transposed_graph[adj_vertex].append(vertex)
+        return transposed_graph
 
+    visited = {v: False for v in graph}
     stack = []
-    visited = set()
-
     for vertex in graph:
-        if vertex not in visited:
-            dfs_pass_one(vertex, stack, visited)
+        if not visited[vertex]:
+            dfs(vertex, visited, stack)
 
-    reverse_g = reverse_graph(graph)
-
-    visited.clear()
-    connected_components = []
+    transposed = transpose(graph)
+    visited = {v: False for v in graph}
+    components = []
     while stack:
         vertex = stack.pop()
-        if vertex not in visited:
-            scc = []
-            dfs_pass_two(vertex, visited, scc)
-            connected_components.append(scc)
+        if not visited[vertex]:
+            component = {}
+            dfs(vertex, visited, [])
+            components.append(component)
 
-    strongly_connected_components = [component for component in connected_components if len(component) > 1]
-    filtered_components = []
-
-    for components in strongly_connected_components:
-        filtered_dict = {}
-        for component in components:
-            if component in graph:
-                filtered_dict[component] = graph[component]
-        filtered_components.append(filtered_dict)
-    
-    result = sorted(filtered_components, key=lambda component: list(component.keys())[0])
-
-    if strongly_connected_components:
-        return f'Graph contains {len(strongly_connected_components)} strong connectivity components: {result}'
-    return "Graph doesn`t contain any strong connectivity components."
+    num = len(components)
+    if num >= 2:
+        return f'Graph contains {num} strong connectivity components: {components}'
+    return 'Graph doesn`t contain any strong connectivity components.'
 
 def connection_points(graph: dict) -> list:
     '''

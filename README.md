@@ -1,1 +1,1 @@
-# graph_connectivity_analysis_team
+Graph connectivity analysis project
