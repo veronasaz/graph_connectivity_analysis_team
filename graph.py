@@ -39,9 +39,9 @@ def components_of_connectivity(graph: dict) -> list:
     '''
     Finds the connectivity components of an unoriented graph and returns a list of them.
     >>> components_of_connectivity({0: [1, 2], 1: [0, 2], 2: [0, 1], 3: [4], 4: [3]})
-    'Graph contains 2 connectivity components: [{0: [1, 2], 1: [0, 2], 2: [0, 1]}, {3: [4], 4: [3]}]'
+    'Graph contains 2 connectivity component(s): [{0: [1, 2], 1: [0, 2], 2: [0, 1]}, {3: [4], 4: [3]}]'
     >>> components_of_connectivity({0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]})
-    'Graph contains 1 connectivity component: \
+    'Graph contains 1 connectivity component(s): \
 [{0: [1, 2, 4], 1: [0, 2, 3], 2: [0, 1, 3], 3: [1, 2, 4], 4: [0, 3]}]'
     '''
     def dfs(node, visited, component):
@@ -60,53 +60,65 @@ def components_of_connectivity(graph: dict) -> list:
             component = {}
             dfs(node, visited, component)
             connectivity_components.append(component)
+
     num = len(connectivity_components)
-    if num >= 2:
-        return f'Graph contains {num} connectivity components: {connectivity_components}'
-    return f'Graph contains {num} connectivity component: {connectivity_components}'
+    if num > 0:
+        return f'Graph contains {num} connectivity component(s): {connectivity_components}'
+    return 'Graph doesn`t contains any connectivity component.'
 
 def strong_connectivity(graph: dict) -> list:
     '''
     Finds the components of the strong connectivity
     of an oriented graph and returns a list of them.
     >>> strong_connectivity({0: [1], 1: [2], 2: [0]})
-    'Graph contains 1 strong connectivity component: [{0: [1], 1: [2], 2: [0]}]'
+    'Graph contains 1 strong connectivity component(s): [[0, 2, 1]]'
     >>> strong_connectivity({0: [1], 1: [2], 2: [0, 3], 3: [4], 4: [5], 5: [3]})
-    'Graph contains 2 strong connectivity components: [{0: [1], 1: [2], 2: [0, 3], 3: [4], 4: [5], 5: [3]}, {6: [7], 7: [6]}]'
+    'Graph contains 2 strong connectivity component(s): [[0, 2, 1], [3, 5, 4]]'
+    >>> strong_connectivity({0: [1, 2], 1: [2], 2: [0, 1], 3: [4], 4: [3, 5], 6: [7], 7: [6]})
+    'Graph contains 3 strong connectivity component(s): [[0, 2, 1], [3, 4], [6, 7]]'
     '''
-    def dfs(vertex, visited, stack):
-        visited[vertex] = True
-        for adj_vertex in graph[vertex]:
-            if not visited[adj_vertex]:
-                dfs(adj_vertex, visited, stack)
-        stack.append(vertex)
+    def fill_order(v, graph, visited, stack):
+        visited[v] = True
+        if v in graph:
+            for i in graph[v]:
+                if i not in visited or not visited[i]:
+                    fill_order(i, graph, visited, stack)
+        stack.append(v)
 
-    def transpose(graph):
-        transposed_graph = {v: [] for v in graph}
-        for vertex in graph:
-            for adj_vertex in graph[vertex]:
-                transposed_graph[adj_vertex].append(vertex)
-        return transposed_graph
+    def dfs(v, graph, visited, result):
+        visited[v] = True
+        result.append(v)
+        if v in graph:
+            for i in graph[v]:
+                if i not in visited or not visited[i]:
+                    dfs(i, graph, visited, result)
 
-    visited = {v: False for v in graph}
     stack = []
-    for vertex in graph:
-        if not visited[vertex]:
-            dfs(vertex, visited, stack)
+    visited = {}
+    
+    for node in graph:
+        visited[node] = False
 
-    transposed = transpose(graph)
-    visited = {v: False for v in graph}
-    components = []
+    for node in graph:
+        if not visited[node]:
+            fill_order(node, graph, visited, stack)
+
+    transposed_graph = {j: [i for i in graph if j in graph[i]] for j in graph}
+    for node in graph:
+        visited[node] = False
+    
+    strongly_connected_components = []
+
     while stack:
-        vertex = stack.pop()
-        if not visited[vertex]:
-            component = {}
-            dfs(vertex, visited, [])
-            components.append(component)
-
-    num = len(components)
-    if num >= 2:
-        return f'Graph contains {num} strong connectivity components: {components}'
+        node = stack.pop()
+        if not visited[node]:
+            component = []
+            dfs(node, transposed_graph, visited, component)
+            strongly_connected_components.append(component)
+    result_components = sorted(strongly_connected_components, key=lambda component: component[0])
+    num = len(result_components)
+    if num > 0:
+        return f'Graph contains {num} strong connectivity component(s): {result_components}'
     return 'Graph doesn`t contain any strong connectivity components.'
 
 def connection_points(graph: dict) -> list:
